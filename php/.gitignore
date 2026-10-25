@@ -1,0 +1,36 @@
+# Runtime data / caches written by the app
+.cache/
+data/*
+!data/.gitkeep
+*.log
+
+# Local configuration and secrets
+.env
+.env.*
+config.local.php
+
+# Composer (if used)
+vendor/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Agent & AI tool configurations
+.mcp.json
+.agents/
+.agentsroom/
+.autoagents/
+.claude/
+
+# Additional private credentials
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json
+auth.json

@@ -1,0 +1,122 @@
+// Shared versioning adapted from <GIT>/android-common/android-common.gradle.
+// version.properties: major/minor/patch -> versionName M.m.p, versionCode M*10000+m*100+p.
+// Signing settings are read only from the external platform keys folder.
+
+def root = rootProject
+def versionFile = root.file('version.properties')
+
+def readVersion = {
+    if (!versionFile.exists()) {
+        throw new GradleException("Missing ${versionFile}. Create it with lines major=1, minor=0, patch=0")
+    }
+    def p = new Properties()
+    versionFile.withInputStream { p.load(it) }
+    def part = { String k ->
+        def v = p.getProperty(k)?.trim()
+        if (v == null || !v.isInteger() || v.toInteger() < 0) {
+            throw new GradleException("version.properties: '$k' must be a non-negative number")
+        }
+        v.toInteger()
+    }
+    def (int ma, int mi, int pa) = [part('major'), part('minor'), part('patch')]
+    if (mi > 99 || pa > 99) throw new GradleException("version.properties: minor and patch must be 0..99")
+    [ma, mi, pa]
+}
+
+def (int vMajor, int vMinor, int vPatch) = readVersion()
+def vName = "$vMajor.$vMinor.$vPatch".toString()
+def vCode = vMajor * 10000 + vMinor * 100 + vPatch
+project.extensions.extraProperties.set('appVersionName', vName)
+project.extensions.extraProperties.set('appVersionCode', vCode)
+
+def commonDir = root.file(root.findProperty('configs.android.dir') ?: '../configs/android/gradle')
+
+// Keep the platform paths public; credential values remain outside repositories.
+def keysDir = new File(System.getProperty('os.name').toLowerCase().contains('windows')
+        ? 'W:/Desktop/keys' : '/sdcard/keys')
+def unsigned = (root.findProperty('android.common.unsigned') ?: 'false').toString().toBoolean()
+def signingFile = new File(keysDir, 'keystore.properties')
+def signing = null
+if (!unsigned && signingFile.isFile()) {
+    def properties = new Properties()
+    signingFile.withReader('UTF-8') { properties.load(it) }
+    def fields = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+    if (fields.any { !properties.getProperty(it)?.trim() }) {
+        throw new GradleException('External keystore.properties is incomplete; expected storeFile, storePassword, keyAlias, keyPassword')
+    }
+    def store = new File(properties.getProperty('storeFile'))
+    if (!store.isAbsolute()) store = new File(keysDir, properties.getProperty('storeFile'))
+    def keysPath = keysDir.canonicalFile.toPath()
+    if (!store.canonicalFile.toPath().startsWith(keysPath) || !store.isFile()) {
+        throw new GradleException('Signing keystore must exist inside the platform keys folder')
+    }
+    signing = [store: store, password: properties.getProperty('storePassword'),
+               alias: properties.getProperty('keyAlias'), keyPassword: properties.getProperty('keyPassword')]
+}
+
+android {
+    defaultConfig {
+        versionCode = vCode
+        versionName = vName
+    }
+    if (signing != null) {
+        def release = signingConfigs.maybeCreate('release')
+        release.storeFile = signing.store
+        release.storePassword = signing.password
+        release.keyAlias = signing.alias
+        release.keyPassword = signing.keyPassword
+        buildTypes.getByName('release').signingConfig = release
+    } else {
+        buildTypes.getByName('release').signingConfig = null
+    }
+}
+
+try {
+    project.extensions.getByName('base').archivesName.set("${root.name.replace(' ', '')}-$vName".toString())
+} catch (ignored) {
+}
+
+def bump = { String kind ->
+    def (int ma, int mi, int pa) = readVersion()
+    def n = kind == 'major' ? [ma + 1, 0, 0] : kind == 'minor' ? [ma, mi + 1, 0] : [ma, mi, pa + 1]
+    if (n[1] > 99 || n[2] > 99) throw new GradleException("minor/patch would reach 100: bump the next part instead")
+    def text = versionFile.text
+            .replaceAll(/(?m)^major=.*$/, "major=${n[0]}")
+            .replaceAll(/(?m)^minor=.*$/, "minor=${n[1]}")
+            .replaceAll(/(?m)^patch=.*$/, "patch=${n[2]}")
+    versionFile.text = text
+    println "Version $ma.$mi.$pa -> ${n.join('.')} (versionCode ${n[0] * 10000 + n[1] * 100 + n[2]})"
+}
+
+['Major', 'Minor', 'Patch'].each { k ->
+    tasks.register("bump$k") {
+        group = 'versioning'
+        description = "Increments the ${k.toLowerCase()} version in version.properties"
+        notCompatibleWithConfigurationCache('edits version.properties')
+        doLast { bump(k.toLowerCase()) }
+    }
+}
+
+tasks.register('printVersion') {
+    group = 'versioning'
+    description = 'Prints versionName and versionCode'
+    notCompatibleWithConfigurationCache('prints build configuration')
+    doLast {
+        println "$vName ($vCode)"
+        println 'release output: ' + (signing != null ? 'signed using external keys folder' : 'unsigned')
+    }
+}
+
+tasks.register('syncAndroidCommon') {
+    group = 'versioning'
+    description = 'Copies the versioning template from configs into this project'
+    notCompatibleWithConfigurationCache('copies a build script')
+    doLast {
+        def master = new File(commonDir, 'android-common.gradle')
+        def local = root.file('gradle/android-common.gradle')
+        if (!master.exists()) throw new GradleException("Master copy not found: $master")
+        local.parentFile.mkdirs()
+        if (local.exists() && master.text == local.text) println 'android-common.gradle is up to date'
+        else { local.text = master.text; println "Updated $local from $master" }
+    }
+}
