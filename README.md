@@ -37,7 +37,7 @@ without those settings release APKs are unsigned. The original android-common fo
 4. Replace `PROJECT_NAME` in `settings.gradle.kts` and `APP_ID` in `app/build.gradle.kts`.
 5. If the app uses AndroidX libraries, set `android.useAndroidX=true` in `gradle.properties`.
 6. If you use Compose, add the `org.jetbrains.kotlin.plugin.compose` plugin (same version as Kotlin) and
-   `buildFeatures { compose = true }`. smallGestures is the only Compose project so far and uses a version catalog.
+   `buildFeatures { compose = true }`. pGestures is the only Compose project so far and uses a version catalog.
 
 Gradle needs JDK 17+. On this PC, `JAVA_HOME` is not set and PATH has a 32-bit Java 8, so use for example
 `set JAVA_HOME=%USERPROFILE%\.jdks\ms-17.0.20.1`, or Android Studio's Gradle JDK setting.
@@ -51,23 +51,22 @@ Look before overwriting: some differences are deliberate.
 
 | Project | Differences |
 |---|---|
-| Darker | AGP 9.0.0-alpha06, Gradle 9.0.0, Java 11, minSdk 26; extra `debug-apk.yml` workflow |
-| GPS Tools | AGP 8.13.2 without Kotlin plugin version in root, Gradle 9.3.0, no android-common |
-| HolePunching | Groovy build (`build.gradle`), own `.gitignore` (server data), not a git repo |
-| LocalBridge | multi-module (`android`, `core`), version catalog, AGP 8.11.1 / Kotlin 2.1.21 |
-| Qalc, Sheaf-launcher, VKeyboard | match the template versions; compileSdk/targetSdk 35 |
-| Send Anyway | AGP 8.9.1 / Kotlin 2.1.20, SDK 35; extra `debug-apk.yml` |
-| UniFX, picoNotes, picoSensors | AGP 8.7.3, Gradle 8.11.1/8.9, SDK 35 |
-| Warehousy | version catalog, Gradle 9.0.0, Java 11, minify off |
-| picoCalendar | AGP 8.11.1 / Kotlin 2.1.21, no android-common |
-| picoSMS, picoStrips | newer Kotlin (2.2.20 / 2.3.20); otherwise the template is based on picoSMS |
-| smallGestures | Compose + version catalog, AGP 8.7.3 |
+| pDimmer | AGP 9.0.0-alpha06, Gradle 9.0.0, Java 11, minSdk 26 |
+| pGPS | plain Java (no Kotlin), AGP 8.13.2, Gradle 9.3.0 |
+| pHolePunch | proof of concept: Groovy build (`build.gradle`), own `.gitignore` (server data), not a git repo |
+| pSync | multi-module (`android`, `core`), version catalog, AGP 8.11.1 / Kotlin 2.1.21 |
+| pCalc, pLauncher, pKeyboard | match the template versions; compileSdk/targetSdk 35 |
+| pShare | AGP 8.9.1 / Kotlin 2.1.20, SDK 35 |
+| pFiles, pUtils | AGP 8.7.3, Gradle 8.11.1/8.9, SDK 35 |
+| pInventory (internal) | version catalog, Gradle 9.0.0, Java 11, minify off |
+| pCalendar | AGP 8.11.1 / Kotlin 2.1.21 |
+| pSMS, pScanner | newer Kotlin (2.2.20 / 2.3.20); otherwise the template is based on pSMS |
+| pGestures | Compose + version catalog, AGP 8.7.3 |
 | php-cache-proxy | minimal `.htaccess` (rewrite everything); `.gitignore` for `cookies.txt`, `lastsite.txt`, `data/*` |
 | simplemd4php | `.htaccess` also blocks raw `.md` files (keep that rule there) |
 
-All Android repos use the same `.gitignore` as the template, but without `.autoagents/` (used by Send Anyway,
-Sheaf-launcher and picoCalendar) and `.gradle-home/`. Projects without `.gitattributes`: Darker, Sheaf-launcher,
-VKeyboard, php-cache-proxy, HolePunching.
+All Android repos use the same `.gitignore` as the template, but without `.autoagents/` (used by pShare,
+pLauncher and pCalendar) and `.gradle-home/`. Projects without `.gitattributes`: php-cache-proxy, pHolePunch.
 
 ## android-common integration
 
