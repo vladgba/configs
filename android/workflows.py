@@ -22,7 +22,8 @@ PROJECTS = [
     ("pFiles", "pFiles", "UniFX", "app", "testDebugUnitTest", "assembleRelease"),
     ("pGPS", "pGPS", "GPS Tools", "app", "", "assembleRelease"),
     ("pGestures", "pGestures", "smallGestures", "app", "testDebugUnitTest", "assembleRelease"),
-    ("pKeyboard", "pKeyboard", "VKeyboard", "app", "testDebugUnitTest", "assembleRelease"),
+    # "*": the keyboard (app) and its voice add-on (voice) are both uploaded
+    ("pKeyboard", "pKeyboard", "VKeyboard", "*", "testDebugUnitTest", "assembleRelease"),
     ("pLauncher", "pLauncher", "Sheaf-launcher", "app", "", "assembleRelease"),
     ("pSMS", "pSMS", "picoSMS", "app", "testDebugUnitTest", "assembleRelease"),
     ("pScanner", "pScanner", "picoStrips", "app", "", "assembleRelease"),
