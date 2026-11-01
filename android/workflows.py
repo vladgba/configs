@@ -18,6 +18,7 @@ OBSOLETE = ("android.yml", "debug-apk.yml")
 PROJECTS = [
     ("pCalc", "pCalc", "Qalc", "app", "", "assembleRelease"),
     ("pCalendar", "pCalendar", "picoCalendar", "app", "", "assembleRelease"),
+    ("pDialer", "pDialer", "pDialer", "app", "testDebugUnitTest", "assembleRelease"),
     ("pDimmer", "pDimmer", "Darker", "app", "", "assembleRelease"),
     ("pFiles", "pFiles", "UniFX", "app", "testDebugUnitTest", "assembleRelease"),
     ("pGPS", "pGPS", "GPS Tools", "app", "", "assembleRelease"),
